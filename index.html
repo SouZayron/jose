@@ -490,36 +490,42 @@ function setPlayingUI(isPlaying){
   mpIconPlay.style.display = isPlaying ? 'none' : '';
   mpIconPause.style.display = isPlaying ? '' : 'none';
 }
-mpPlayBtn.addEventListener('click', ()=>{
-  if(mpAudio.paused){ mpAudio.play().catch(()=>{}); }
-  else{ mpAudio.pause(); }
+mpPlayBtn.addEventListener('click', (e)=>{
+  e.stopPropagation();
+  if(mpAudio.paused){
+    mpAudio.muted = false;
+    mpAudio.volume = mpVolume.value/100;
+    mpAudio.play().catch(showAudioError);
+  }else if(mpAudio.muted){
+    /* já estava tocando no mudo (autoplay): só libera o som */
+    mpAudio.muted = false;
+    mpAudio.volume = mpVolume.value/100;
+  }else{
+    mpAudio.pause();
+  }
 });
 mpAudio.addEventListener('play', ()=> setPlayingUI(true));
 mpAudio.addEventListener('pause', ()=> setPlayingUI(false));
-mpVolume.addEventListener('input', ()=>{ mpAudio.volume = mpVolume.value/100; });
+mpVolume.addEventListener('input', ()=>{ mpAudio.volume = mpVolume.value/100; mpAudio.muted = false; });
+
+/* aviso no visor se o arquivo de áudio não for encontrado */
+function showAudioError(){
+  document.querySelectorAll('.mp-marquee span').forEach(sp=>{ sp.textContent = 'Erro: musica.mp3 não encontrado'; });
+}
+mpAudio.addEventListener('error', showAudioError);
 
 /* Autoplay: navegadores só permitem autoplay mudo.
-   Toca mudo ao carregar e desmuta no primeiro clique/toque. */
+   Tenta tocar mudo ao carregar e libera o som no primeiro clique/toque na página. */
 mpAudio.muted = true;
-function unmuteAudio(){
+function firstInteraction(){
   mpAudio.muted = false;
   mpAudio.volume = mpVolume.value/100;
+  if(mpAudio.paused){ mpAudio.play().catch(()=>{}); }
 }
-document.addEventListener('click', unmuteAudio, {once:true});
-document.addEventListener('touchstart', unmuteAudio, {once:true});
-document.addEventListener('keydown', unmuteAudio, {once:true});
-
-function attemptAutoplay(){
-  const p = mpAudio.play();
-  if(p !== undefined){
-    p.catch(()=>{
-      const start = ()=>{ mpAudio.play().catch(()=>{}); };
-      document.addEventListener('click', start, {once:true});
-      document.addEventListener('touchstart', start, {once:true});
-    });
-  }
-}
-attemptAutoplay();
+document.addEventListener('click', firstInteraction, {once:true});
+document.addEventListener('touchstart', firstInteraction, {once:true});
+document.addEventListener('keydown', firstInteraction, {once:true});
+mpAudio.play().catch(()=>{});
 </script>
 </body>
 </html>
