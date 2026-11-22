@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>José Lopes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TOKENS — paleta Benfica (vermelhos fortes + preto)
+   ============================================================ */
+:root{
+  --c1:#ffb9bd;   /* rosado claro (destaques suaves) */
+  --c2:#ff8f96;
+  --c3:#e30613;   /* vermelho Benfica */
+  --c4:#ff4d57;
+  --c5:#d4b36a;   /* dourado discreto (águia) */
+  --c6:#7a0710;
+  --c7:#c8102e;
+  --c8:#ff6b73;
+  --c9:#a30b17;
+  --c10:#5c050c;
+
+  --bg-deep:#0e0305;
+  --bg-deep2:#2a0509;
+  --text:#fff4f4;
+  --text-2:#e6bcc0;
+  --primary:var(--c3);
+  --secondary:var(--c1);
+  --glow:var(--c4);
+
+  --card:rgba(255,255,255,.06);
+  --card-border:rgba(227,6,19,.45);
+  --shadow:0 20px 55px rgba(120,0,10,.55);
+  --radius:16px;
+  --blur:18px;
+  --online:#2ECC71;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg-deep);
+  color:var(--text);
+  position:relative;
+  height:100vh;
+  height:100dvh;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ============================================================
+   FUNDO — degradê "mesh" animado em vermelho escuro
+   ============================================================ */
+.bg-base{
+  position:fixed;inset:0;z-index:0;
+  background:linear-gradient(160deg,var(--bg-deep) 0%,var(--bg-deep2) 50%,#1a0407 100%);
+}
+.mesh{position:fixed;inset:-15%;z-index:0;pointer-events:none;filter:blur(80px);}
+.mesh span{
+  position:absolute;border-radius:50%;opacity:.55;
+  animation:drift 20s ease-in-out infinite;
+  will-change:transform;
+}
+.mesh span:nth-child(1){width:48vw;height:48vw;left:-10%;top:-12%;background:var(--c9);animation-duration:16s;}
+.mesh span:nth-child(2){width:40vw;height:40vw;right:-12%;top:2%;background:var(--c3);animation-duration:20s;animation-delay:-4s;opacity:.4;}
+.mesh span:nth-child(3){width:44vw;height:44vw;left:12%;bottom:-20%;background:var(--c6);animation-duration:22s;animation-delay:-9s;}
+.mesh span:nth-child(4){width:36vw;height:36vw;right:5%;bottom:-14%;background:var(--c7);animation-duration:18s;animation-delay:-12s;opacity:.45;}
+.mesh span:nth-child(5){width:32vw;height:32vw;left:38%;top:28%;background:var(--c10);animation-duration:24s;animation-delay:-6s;opacity:.6;}
+@keyframes drift{
+  0%,100%{transform:translate(0,0) scale(1);}
+  25%{transform:translate(8%,10%) scale(1.15);}
+  50%{transform:translate(-6%,6%) scale(.9);}
+  75%{transform:translate(6%,-9%) scale(1.1);}
+}
+.grain-glow{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(circle at 50% 20%,rgba(227,6,19,.18),transparent 60%);
+}
+
+/* ---------- notas musicais no fundo ---------- */
+.note-field{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.music-note{
+  position:absolute;
+  font-family:'Segoe UI Symbol','Noto Sans Symbols','Noto Music','DejaVu Sans',sans-serif;
+  line-height:1;
+  color:#fff;
+  text-shadow:0 0 8px rgba(255,90,100,.7);
+  opacity:.15;
+  animation-name:noteTwinkle;
+  animation-timing-function:ease-in-out;
+  animation-iteration-count:infinite;
+  will-change:transform,opacity;
+}
+@keyframes noteTwinkle{
+  0%,100%{opacity:.2;transform:translateY(0) rotate(var(--rot,0deg)) scale(.85);}
+  50%{opacity:.85;transform:translateY(-14px) rotate(calc(var(--rot,0deg) + 8deg)) scale(1.1);}
+}
+
+.logo-overlay{
+  position:fixed;z-index:1;pointer-events:none;
+  right:0;top:50%;transform:translateY(-50%);
+  width:min(36vw,440px);
+  opacity:.2;
+  background:#e30613;
+  -webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 35%,transparent 100%);
+  mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 35%,transparent 100%);
+}
+.logo-overlay.left{right:auto;left:0;}
+.logo-overlay img{display:block;width:100%;height:auto;filter:grayscale(1) contrast(1.25);mix-blend-mode:multiply;}
+
+/* ============================================================
+   GLASS
+   ============================================================ */
+.glass{
+  background:var(--card);
+  backdrop-filter:blur(var(--blur));
+  -webkit-backdrop-filter:blur(var(--blur));
+  border:1px solid var(--card-border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+
+/* ============================================================
+   LAYOUT GERAL
+   ============================================================ */
+.wrap{
+  position:relative;z-index:5;
+  flex:1 1 auto;min-height:0;
+  display:flex;align-items:center;justify-content:center;
+  padding:clamp(8px,2vh,26px) 5vw;
+  overflow:hidden;
+}
+.card{
+  width:100%;max-width:820px;
+  max-height:100%;
+  padding:clamp(16px,3vh,36px) clamp(22px,4vw,46px) clamp(14px,2.4vh,28px);
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:clamp(2px,.6vh,7px);
+  animation:cardIn .8s cubic-bezier(.2,.8,.2,1) both;
+  overflow:hidden;
+}
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(24px) scale(.98);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+
+.status-chip{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.05);
+  padding:7px 15px;border-radius:6px;border:1px solid var(--card-border);
+  font-size:12.5px;font-weight:600;color:var(--text-2);
+  margin-bottom:clamp(8px,1.6vh,16px);
+  text-transform:uppercase;letter-spacing:.8px;
+}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--online);box-shadow:0 0 8px var(--online);}
+
+/* ---------- AVATAR ---------- */
+.avatar-wrap{
+  position:relative;
+  height:clamp(120px,26vh,215px);
+  aspect-ratio:4/5;
+  margin-bottom:clamp(8px,1.6vh,16px);
+  animation:floaty 5s ease-in-out infinite;
+}
+@keyframes floaty{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+.photo-glow{
+  position:absolute;inset:-16px;border-radius:20px;
+  background:radial-gradient(circle,var(--c3) 0%,transparent 70%);
+  opacity:.55;filter:blur(20px);animation:pulse 4.5s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:.35;}50%{opacity:.7;}}
+
+.avatar-main{
+  position:relative;z-index:1;width:100%;height:100%;
+  border-radius:12px;overflow:hidden;
+  background:var(--bg-deep2);
+  box-shadow:0 0 0 2px var(--bg-deep2), var(--shadow);
+}
+.avatar-main img{width:100%;height:100%;object-fit:cover;display:block;}
+
+/* anel de luz */
+.light-ring{
+  position:absolute;inset:-9px;z-index:2;
+  width:calc(100% + 18px);height:calc(100% + 18px);
+  overflow:visible;pointer-events:none;
+}
+.light-ring .ring-track{
+  fill:none;
+  stroke:rgba(255,244,244,.16);
+  stroke-width:1.4;
+}
+.light-ring .ring-trace{
+  fill:none;
+  stroke:url(#lightGrad);
+  stroke-width:1.6;
+  stroke-linecap:round;
+  stroke-dasharray:6 94;
+  stroke-dashoffset:0;
+  opacity:.95;
+  filter:drop-shadow(0 0 2.5px var(--c4));
+  animation:lightTravel 11s linear infinite;
+}
+@keyframes lightTravel{to{stroke-dashoffset:-100;}}
+
+/* ---------- NOME ANIMADO ---------- */
+.name-xl{
+  position:relative;
+  display:flex;justify-content:center;flex-wrap:wrap;column-gap:.28em;
+  font-family:'Russo One','Arial Black',Impact,sans-serif;font-weight:400;font-style:normal;text-transform:uppercase;
+  font-size:clamp(32px,min(9vw,7vh),68px);
+  line-height:1.05;letter-spacing:3px;
+  margin-bottom:clamp(2px,.6vh,8px);
+  background:linear-gradient(100deg,
+    var(--text) 10%, var(--c4) 28%, var(--c1) 40%, var(--c3) 52%, var(--text) 70%);
+  background-size:230% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:nameShine 5s linear infinite;
+}
+.name-xl .word{display:inline-flex;white-space:nowrap;}
+.name-xl .letter{display:inline-block;white-space:pre;}
+@keyframes nameShine{
+  0%{background-position:180% 0;}
+  100%{background-position:-80% 0;}
+}
+.effect-wave .letter{animation-name:letterWave; animation-duration:1.8s; animation-timing-function:ease-in-out; animation-iteration-count:infinite;}
+@keyframes letterWave{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+.effect-glow .letter{animation-name:letterGlow; animation-duration:2.4s; animation-timing-function:ease-in-out; animation-iteration-count:infinite;}
+@keyframes letterGlow{
+  0%,100%{filter:drop-shadow(0 0 3px var(--c3)) brightness(1);}
+  50%{filter:drop-shadow(0 0 24px var(--c3)) brightness(1.35);}
+}
+.effect-flicker .letter{animation-name:letterFlicker; animation-duration:3.2s; animation-timing-function:ease-in-out; animation-iteration-count:infinite;}
+@keyframes letterFlicker{
+  0%,19%,21%,23%,54%,56%,100%{opacity:1;}
+  20%,22%,55%{opacity:.3;}
+}
+.effect-tilt .letter{animation-name:letterTilt; animation-duration:2.4s; animation-timing-function:ease-in-out; animation-iteration-count:infinite; transform-style:preserve-3d;}
+@keyframes letterTilt{0%,100%{transform:rotateY(0deg) translateY(0);}50%{transform:rotateY(22deg) translateY(-6px);}}
+
+.subtitle{
+  font-size:clamp(13px,1.7vh,16px);font-weight:600;color:var(--secondary);letter-spacing:.4px;
+  margin-bottom:clamp(6px,1.4vh,16px);display:flex;align-items:center;gap:6px;
+}
+.subtitle .heartbeat{display:inline-block;animation:heartbeat 1.6s ease-in-out infinite;}
+@keyframes heartbeat{
+  0%,100%{transform:scale(1);}
+  15%{transform:scale(1.25);}
+  30%{transform:scale(1);}
+  45%{transform:scale(1.18);}
+  60%{transform:scale(1);}
+}
+
+.bio{
+  font-size:clamp(12.5px,1.6vh,14.5px);line-height:1.55;color:var(--text-2);
+  max-width:660px;margin:0 0 clamp(10px,1.8vh,18px);
+}
+
+/* ---------- BOTÕES EM PARALELOGRAMO (estilo esportivo) ---------- */
+.btn-row{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:14px;
+  width:100%;margin-bottom:clamp(12px,2vh,22px);padding:0 10px;
+}
+.btn-rect{
+  position:relative;overflow:hidden;
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:9px 30px;border-radius:0;text-decoration:none;
+  transform:skewX(-16deg);
+  background:linear-gradient(135deg,var(--c3),var(--c9));
+  color:#fff;font-family:'Poppins',sans-serif;font-weight:700;font-size:13px;
+  letter-spacing:1.5px;text-transform:uppercase;
+  border:1px solid rgba(255,255,255,.25);
+  border-left:4px solid #fff;
+  box-shadow:0 6px 16px rgba(120,0,10,.5);
+  transition:transform .25s ease, box-shadow .25s ease, filter .25s ease;
+}
+.btn-rect .lbl{display:inline-flex;align-items:center;gap:8px;transform:skewX(16deg);}
+.btn-rect svg{flex:none;}
+.btn-rect:hover{transform:skewX(-16deg) translateY(-3px);box-shadow:0 10px 22px rgba(227,6,19,.55);filter:brightness(1.15);}
+.btn-rect:focus-visible{outline:2px solid var(--c1);outline-offset:3px;}
+.btn-rect.alt{
+  background:linear-gradient(135deg,#1c1c1c,#050505);
+  border-color:rgba(227,6,19,.6);border-left-color:var(--c3);
+}
+.btn-rect.ghost{
+  background:transparent;
+  border-color:rgba(255,255,255,.4);border-left-color:var(--c1);
+  box-shadow:none;
+}
+.btn-rect.ghost:hover{background:rgba(227,6,19,.25);}
+
+/* ---------- PLAYER DE MÚSICA ---------- */
+.music-player{
+  display:flex;align-items:center;gap:10px;
+  padding:6px 14px 6px 6px;
+  background:var(--card);backdrop-filter:blur(var(--blur));
+  border:1px solid var(--card-border);border-radius:8px;
+  max-width:fit-content;margin:0 auto;
+}
+.mp-play-btn{
+  width:30px;height:30px;border-radius:5px;flex:none;
+  background:linear-gradient(155deg,var(--c3),var(--c9));
+  border:none;color:#fff;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .2s ease;
+}
+.mp-play-btn:hover{transform:scale(1.08);}
+.mp-screen{
+  width:170px;height:22px;overflow:hidden;position:relative;
+  background:rgba(0,0,0,.4);border-radius:4px;
+  border:1px solid var(--card-border);display:flex;align-items:center;
+}
+.mp-marquee{display:flex;gap:50px;white-space:nowrap;animation:mpScroll 11s linear infinite;padding-left:100%;}
+.mp-marquee span{font-size:10.5px;font-weight:600;letter-spacing:.3px;color:var(--secondary);}
+@keyframes mpScroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.mp-volume{display:flex;align-items:center;gap:6px;color:var(--text-2);}
+.mp-volume input[type="range"]{
+  width:66px;height:3px;-webkit-appearance:none;appearance:none;
+  background:var(--card-border);border-radius:2px;outline:none;cursor:pointer;
+}
+.mp-volume input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:11px;height:11px;border-radius:2px;
+  background:var(--c3);cursor:pointer;
+}
+.mp-volume input[type="range"]::-moz-range-thumb{
+  width:11px;height:11px;border-radius:2px;background:var(--c3);border:none;cursor:pointer;
+}
+
+footer.mini{
+  position:relative;z-index:5;text-align:center;flex:none;
+  padding:2px 20px clamp(6px,1.4vh,12px);font-size:11px;color:var(--text-2);
+}
+footer.mini a{
+  color:var(--secondary);text-decoration:none;font-weight:600;
+}
+footer.mini a:hover{text-decoration:underline;}
+
+/* ============================================================
+   RESPONSIVO
+   ============================================================ */
+@media (max-width:600px){
+  .logo-overlay{width:55vw;top:auto;bottom:0;transform:none;}
+  .name-xl{letter-spacing:.5px;}
+  .mp-screen{width:120px;}
+  .btn-rect{padding:9px 13px;font-size:12px;letter-spacing:1px;}
+  .btn-rect .lbl{gap:6px;}
+  .btn-row{gap:9px;padding:0;}
+}
+@media (prefers-reduced-motion:reduce){
+  .music-note,.mesh span,.avatar-wrap,.photo-glow{animation:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-base"></div>
+<div class="mesh"><span></span><span></span><span></span><span></span><span></span></div>
+<div class="note-field" id="noteField" aria-hidden="true"></div>
+<div class="grain-glow"></div>
+<div class="logo-overlay" aria-hidden="true"><img src="https://xatimg.com/image/Gveo78VhRzQT.jpg" alt=""></div>
+<div class="logo-overlay left" aria-hidden="true"><img src="https://xatimg.com/image/LkcgCeKBAiXU.jpg" alt=""></div>
+
+<div class="wrap">
+  <div class="card glass">
+
+    <div class="status-chip"><span class="dot"></span> Online</div>
+
+    <div class="avatar-wrap">
+      <div class="photo-glow"></div>
+      <div class="avatar-main">
+        <img src="https://xatimg.com/image/khqLulE384jK.png" alt="Foto de José Lopes">
+      </div>
+      <svg class="light-ring" viewBox="0 0 100 125" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="lightGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" style="stop-color:var(--c1)"/>
+            <stop offset="50%" style="stop-color:#fff"/>
+            <stop offset="100%" style="stop-color:var(--c4)"/>
+          </linearGradient>
+        </defs>
+        <rect class="ring-track" x="3" y="3" width="94" height="119" rx="9" ry="9"></rect>
+        <rect class="ring-trace" x="3" y="3" width="94" height="119" rx="9" ry="9" pathLength="100"></rect>
+      </svg>
+    </div>
+
+    <h1 class="name-xl effect-wave" id="nameRadio" aria-label="José Lopes"></h1>
+    <div class="subtitle">I <span class="heartbeat">❤️</span> Benfica FC</div>
+
+    <p class="bio">Sou locutor, apaixonado pela comunicação e pelo mundo do futebol. Benfiquista de coração, com o Benfica sempre no peito. Gosto de boa música, conversas, futebol e de aproveitar a vida.</p>
+
+    <div class="btn-row">
+      <a class="btn-rect" href="https://www.radios.com.br/aovivo/radio-musica-a-seu-gosto/71391" target="_blank" rel="noopener"><span class="lbl"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M3.24 6.15C2.51 6.43 2 7.17 2 8v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H8.3l8.26-3.34L15.88 1 3.24 6.15zM7 20a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm13-8h-2v-2h-2v2H4V8h16v4z"/></svg>
+        Rádio</span>
+      </a>
+      <a class="btn-rect alt" href="https://play.google.com/store/apps/details?id=com.shoutcast.stm.radiomusicaaoseugostopt&hl=pt_BR" target="_blank" rel="noopener"><span class="lbl"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M5 2.5v19a1 1 0 0 0 1.5.86l15-9.5a1 1 0 0 0 0-1.72l-15-9.5A1 1 0 0 0 5 2.5z"/></svg>
+        App</span>
+      </a>
+      <a class="btn-rect ghost" href="https://xat.com/Radio_Oficial_Musica_A_Seu_Gosto#!embed" target="_blank" rel="noopener"><span class="lbl"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4v-4H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>
+        Xat</span>
+      </a>
+    </div>
+
+    <div class="music-player" id="musicPlayer">
+      <button class="mp-play-btn" id="mpPlayBtn" title="Play/Pause" aria-label="Play/Pause">
+        <svg id="mpIconPlay" viewBox="0 0 24 24" width="14" height="14"><polygon points="5,3 20,12 5,21" fill="currentColor"/></svg>
+        <svg id="mpIconPause" viewBox="0 0 24 24" width="14" height="14" style="display:none;"><rect x="5" y="3" width="5" height="18" fill="currentColor"/><rect x="14" y="3" width="5" height="18" fill="currentColor"/></svg>
+      </button>
+      <div class="mp-screen">
+        <div class="mp-marquee">
+          <span>C.Jérôme - Cindy (1976)</span>
+          <span>C.Jérôme - Cindy (1976)</span>
+        </div>
+      </div>
+      <div class="mp-volume">
+        <svg viewBox="0 0 24 24" width="13" height="13"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.06A4.5 4.5 0 0 0 16.5 12z"/></svg>
+        <input type="range" id="mpVolume" min="0" max="100" value="70" aria-label="Volume">
+      </div>
+      <!-- O arquivo MP3 precisa estar na mesma pasta do index.html no GitHub -->
+      <audio id="mpAudio" src="C.J%C3%A9r%C3%B4me%20-%20Cindy%20(1976).mp3" loop preload="auto"></audio>
+    </div>
+
+  </div>
+</div>
+
+<footer class="mini">© 2026 · Feito por <a href="https://xat.me/Zark" target="_blank" rel="noopener">Zark</a></footer>
+
+<script>
+/* ============================================================
+   NOTAS MUSICAIS — flutuando e piscando pelo fundo
+   ============================================================ */
+const noteField = document.getElementById('noteField');
+const NOTES = ['♪','♫','♩','♬','♪','♫'];
+const NOTE_COUNT = 34;
+for(let i=0;i<NOTE_COUNT;i++){
+  const n = document.createElement('span');
+  n.className = 'music-note';
+  n.textContent = NOTES[Math.floor(Math.random()*NOTES.length)];
+  n.style.fontSize = (11 + Math.random()*19).toFixed(0)+'px';
+  n.style.top = (Math.random()*100)+'%';
+  n.style.left = (Math.random()*100)+'%';
+  n.style.setProperty('--rot', (Math.random()*50-25).toFixed(0)+'deg');
+  n.style.animationDuration = (3.5 + Math.random()*4.5)+'s';
+  n.style.animationDelay = (Math.random()*6)+'s';
+  if(Math.random() < .3){ n.style.color = '#ff6b73'; }
+  noteField.appendChild(n);
+}
+
+/* ============================================================
+   NOME — letras + 4 efeitos que trocam a cada 1 minuto
+   ============================================================ */
+const nameEl = document.getElementById('nameRadio');
+const NAME = 'José Lopes';
+let li = 0;
+NAME.split(' ').forEach(word=>{
+  const w = document.createElement('span');
+  w.className = 'word';
+  w.setAttribute('aria-hidden','true');
+  [...word].forEach(ch=>{
+    const span = document.createElement('span');
+    span.className = 'letter';
+    span.textContent = ch;
+    span.style.animationDelay = (li*0.1)+'s';
+    li++;
+    w.appendChild(span);
+  });
+  nameEl.appendChild(w);
+});
+
+const EFFECTS = ['effect-wave','effect-glow','effect-flicker','effect-tilt'];
+let effectIndex = 0;
+setInterval(()=>{
+  effectIndex = (effectIndex+1) % EFFECTS.length;
+  nameEl.className = 'name-xl ' + EFFECTS[effectIndex];
+}, 60000);
+
+/* ============================================================
+   PLAYER DE MÚSICA — play/pause + volume
+   ============================================================ */
+const mpAudio = document.getElementById('mpAudio');
+const mpPlayBtn = document.getElementById('mpPlayBtn');
+const mpIconPlay = document.getElementById('mpIconPlay');
+const mpIconPause = document.getElementById('mpIconPause');
+const mpVolume = document.getElementById('mpVolume');
+
+mpAudio.volume = 0.7;
+
+function setPlayingUI(isPlaying){
+  mpIconPlay.style.display = isPlaying ? 'none' : '';
+  mpIconPause.style.display = isPlaying ? '' : 'none';
+}
+mpPlayBtn.addEventListener('click', ()=>{
+  if(mpAudio.paused){ mpAudio.play().catch(()=>{}); }
+  else{ mpAudio.pause(); }
+});
+mpAudio.addEventListener('play', ()=> setPlayingUI(true));
+mpAudio.addEventListener('pause', ()=> setPlayingUI(false));
+mpVolume.addEventListener('input', ()=>{ mpAudio.volume = mpVolume.value/100; });
+
+/* Autoplay: navegadores só permitem autoplay mudo.
+   Toca mudo ao carregar e desmuta no primeiro clique/toque. */
+mpAudio.muted = true;
+function unmuteAudio(){
+  mpAudio.muted = false;
+  mpAudio.volume = mpVolume.value/100;
+}
+document.addEventListener('click', unmuteAudio, {once:true});
+document.addEventListener('touchstart', unmuteAudio, {once:true});
+document.addEventListener('keydown', unmuteAudio, {once:true});
+
+function attemptAutoplay(){
+  const p = mpAudio.play();
+  if(p !== undefined){
+    p.catch(()=>{
+      const start = ()=>{ mpAudio.play().catch(()=>{}); };
+      document.addEventListener('click', start, {once:true});
+      document.addEventListener('touchstart', start, {once:true});
+    });
+  }
+}
+attemptAutoplay();
+</script>
+</body>
+</html>
